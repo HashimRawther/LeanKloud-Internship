@@ -43,11 +43,11 @@ class task_getAll_postOne(Resource):
         tasks = cur.fetchall()
         task_list =  []
         for task in tasks:
-            new_task = []
-            new_task.append( task[0]) 
-            new_task.append( task[1])
-            new_task.append( task[2].strftime('%Y-%m-%d'))
-            new_task.append( task[3])
+            new_task = dict()
+            new_task['task_id'] = task[0]
+            new_task['task'] = task[1]
+            new_task['due'] = task[2].strftime('%Y-%m-%d')
+            new_task['status'] = task[3]
             #task = json.dumps(task, default =str)
             task_list.append(new_task)
         return task_list
@@ -89,11 +89,11 @@ class task_individual(Resource):
         cur.execute("""select * from tasks where taskid = %s""", (task_id))
         task = cur.fetchone()
         print(task)
-        new_task = []
-        new_task.append( task[0]) 
-        new_task.append( task[1])
-        new_task.append( task[2].strftime('%Y-%m-%d'))
-        new_task.append( task[3])
+        new_task = dict()
+        new_task['task_id'] = task[0]
+        new_task['task'] = task[1]
+        new_task['due'] = task[2].strftime('%Y-%m-%d')
+        new_task['status'] = task[3]
 
         return new_task
 
