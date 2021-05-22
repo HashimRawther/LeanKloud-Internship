@@ -44,7 +44,7 @@ class task_getAll_postOne(Resource):
         task_list =  []
         for task in tasks:
             new_task = dict()
-            new_task['task_id'] = task[0]
+            new_task['id'] = task[0]
             new_task['task'] = task[1]
             new_task['due'] = task[2].strftime('%Y-%m-%d')
             new_task['status'] = task[3]
@@ -54,65 +54,63 @@ class task_getAll_postOne(Resource):
         
     def post(self):
         global user_type
-        db = mysql.connection
-        cur = db.cursor()
-        task_details = task_parser.parse_args()
+        if user_type == "admin":
+            db = mysql.connection
+            cur = db.cursor()
+            task_details = task_parser.parse_args()
 
-        task = task_details['task']
-        due = task_details['due']
-        due = due.date()
-        # print(due)
-        #due = datetime.date()
-        status = task_details['status']
+            task = task_details['task']
+            due = task_details['due']
+            due = due.date()
+            # print(due)
+            #due = datetime.date()
+            status = task_details['status']
 
-        # Getting the state of task list from DB 
-        # Increment task_id
-        cur.execute("select max(taskid) from tasks")
-        taskid = cur.fetchone()
-        taskid = taskid[0] + 1
-        # print(taskid)
-        cur.execute("""insert into tasks values(%s, %s, %s, %s)""", (taskid, task, due, status))
-        db.commit()
-        return  "Task Added"
-        # if user_type == "admin":
-        #     pass
-        # else:
-        #     return "Only Admins can create / modify"
+            # Getting the state of task list from DB 
+            # Increment id
+            cur.execute("select max(id) from tasks")
+            taskid = cur.fetchone()
+            taskid = taskid[0] + 1
+            # print(taskid)
+            cur.execute("""insert into tasks values(%s, %s, %s, %s)""", (taskid, task, due, status))
+            db.commit()
+            return  "Task Added"
+        else:
+            return "Only Admins can create / modify"
 
-# GET a specific task using task_id
-# PUT to change task status using task_id
-@task_route.route('/<string:task_id>')
+# GET a specific task using id
+# PUT to change task status using id
+@task_route.route('/<int:id>')
 class task_individual(Resource):
 
-    def get(self, task_id):
+    def get(self, id):
         cur = mysql.connection.cursor()
-        cur.execute("""select * from tasks where taskid = %s""", (task_id))
+        cur.execute("""select * from tasks where id = %s""", ( str(id) ))
         task = cur.fetchone()
         # print(task)
         new_task = dict()
-        new_task['task_id'] = task[0]
+        new_task['id'] = task[0]
         new_task['task'] = task[1]
         new_task['due'] = task[2].strftime('%Y-%m-%d')
         new_task['status'] = task[3]
 
         return new_task
 
-    def put(self, task_id):
+    def put(self, id):
         global user_type
-        db = mysql.connection
-        cur = db.cursor()
-        status_details = status_parser.parse_args()
+        if user_type == "admin":
+            db = mysql.connection
+            cur = db.cursor()
+            status_details = status_parser.parse_args()
 
-        status = status_details['status']
-        cur = mysql.connection.cursor()
+            status = status_details['status']
+            cur = mysql.connection.cursor()
 
-        cur.execute("""update tasks set status = %s where taskid = %s""", (status, task_id))
-        db.commit()
-        return  "Task Status Modified"
-        # if user_type == "admin":
-        #     pass
-        # else:
-        #     return "Only Admins can create / modify"
+            cur.execute("""update tasks set status = %s where id = %s""", (status, id))
+            db.commit()
+            return  "Task Status Modified"
+        else:
+            return "Only Admins can create / modify"
 
 # GET tasks that are to be completetd on this date
 @task_route.route('/due/<string:due_date>')
@@ -124,7 +122,7 @@ class task_due_date(Resource):
         task_list =  []
         for task in tasks:
             new_task = dict()
-            new_task['task_id'] = task[0]
+            new_task['id'] = task[0]
             new_task['task'] = task[1]
             new_task['due'] = task[2].strftime('%Y-%m-%d')
             new_task['status'] = task[3]
@@ -144,7 +142,7 @@ class task_due_date(Resource):
         task_list =  []
         for task in tasks:
             new_task = dict()
-            new_task['task_id'] = task[0]
+            new_task['id'] = task[0]
             new_task['task'] = task[1]
             new_task['due'] = task[2].strftime('%Y-%m-%d')
             new_task['status'] = task[3]
@@ -163,7 +161,7 @@ class task_due_date(Resource):
         task_list =  []
         for task in tasks:
             new_task = dict()
-            new_task['task_id'] = task[0]
+            new_task['id'] = task[0]
             new_task['task'] = task[1]
             new_task['due'] = task[2].strftime('%Y-%m-%d')
             new_task['status'] = task[3]
