@@ -1,6 +1,6 @@
 import datetime, json
 from json import JSONEncoder
-from flask import render_template, Flask, request, redirect, make_response
+from flask import render_template, Flask
 from flask_restplus import Api, Resource, reqparse, inputs
 from flask_mysqldb import MySQL
 
@@ -88,7 +88,7 @@ class task_individual(Resource):
         cur = mysql.connection.cursor()
         cur.execute("""select * from tasks where taskid = %s""", (task_id))
         task = cur.fetchone()
-        print(task)
+        # print(task)
         new_task = dict()
         new_task['task_id'] = task[0]
         new_task['task'] = task[1]
@@ -113,6 +113,63 @@ class task_individual(Resource):
         #     pass
         # else:
         #     return "Only Admins can create / modify"
+
+# GET tasks that are to be completetd on this date
+@task_route.route('/due/<string:due_date>')
+class task_due_date(Resource):
+    def get(self, due_date):
+        cur = mysql.connection.cursor()
+        cur.execute("""select * from tasks where due = %s and status != %s""", (due_date, "Finished"))
+        tasks = cur.fetchall()
+        task_list =  []
+        for task in tasks:
+            new_task = dict()
+            new_task['task_id'] = task[0]
+            new_task['task'] = task[1]
+            new_task['due'] = task[2].strftime('%Y-%m-%d')
+            new_task['status'] = task[3]
+            #task = json.dumps(task, default =str)
+            task_list.append(new_task)
+        return task_list
+
+# GET tasks that are overdue
+@task_route.route('/overdue')
+class task_due_date(Resource):
+    def get(self):
+        cur = mysql.connection.cursor()
+        today = datetime.date.today().strftime('%Y-%m-%d')
+
+        cur.execute("""select * from tasks where due < %s and status != %s""", (today, "Finished"))
+        tasks = cur.fetchall()
+        task_list =  []
+        for task in tasks:
+            new_task = dict()
+            new_task['task_id'] = task[0]
+            new_task['task'] = task[1]
+            new_task['due'] = task[2].strftime('%Y-%m-%d')
+            new_task['status'] = task[3]
+            #task = json.dumps(task, default =str)
+            task_list.append(new_task)
+        return task_list
+
+# GET tasks that have been completed
+@task_route.route('/finished')
+class task_due_date(Resource):
+    def get(self):
+        cur = mysql.connection.cursor()
+        finished = "Finished"
+        cur.execute("""select * from tasks where status = %s""", [finished])
+        tasks = cur.fetchall()
+        task_list =  []
+        for task in tasks:
+            new_task = dict()
+            new_task['task_id'] = task[0]
+            new_task['task'] = task[1]
+            new_task['due'] = task[2].strftime('%Y-%m-%d')
+            new_task['status'] = task[3]
+
+            task_list.append(new_task)
+        return task_list
 
 # Logs in user
 # Sets global user_type appropriately
